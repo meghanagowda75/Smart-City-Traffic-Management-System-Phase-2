@@ -392,7 +392,10 @@ Open the local URL displayed in your terminal.
 
 </div>
 
-PASTE_GITHUB_VIDEO_ATTACHMENT_URL_HERE
+
+
+
+
 
 <div align="center">
 
@@ -479,13 +482,6 @@ Contributions and suggestions are welcome!
 
 ---
 
-# 📜 15. LICENSE
-
-This project is distributed under the MIT License.
-
-Refer to the [LICENSE](LICENSE) file for details.
-
----
 
 <div align="center">
 
