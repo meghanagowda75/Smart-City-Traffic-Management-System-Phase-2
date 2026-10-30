@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartCity Traffic — AI-Powered Urban Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --neon: #00f5d4;
+      --neon2: #7b2fff;
+      --warn: #ff4e4e;
+      --gold: #ffd166;
+      --dark: #06090f;
+      --card: #0d1325;
+      --border: rgba(0,245,212,0.18);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--dark);
+      color: #e0e8ff;
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED GRID BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,245,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,212,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridShift 20s linear infinite;
+    }
+    @keyframes gridShift {
+      0%   { background-position: 0 0; }
+      100% { background-position: 60px 60px; }
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 60px;
+      background: rgba(6,9,15,0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900; font-size: 1.2rem;
+      color: var(--neon);
+      text-decoration: none;
+      letter-spacing: 2px;
+    }
+    .logo span { color: var(--neon2); }
+    nav .nav-links { display: flex; gap: 32px; align-items: center; }
+    nav a { color: #a0b0d0; text-decoration: none; font-size: 0.85rem; font-weight: 600; letter-spacing: 1px; transition: color .2s; }
+    nav a:hover { color: var(--neon); }
+    .btn-nav {
+      padding: 9px 22px;
+      background: transparent;
+      border: 1.5px solid var(--neon);
+      color: var(--neon);
+      border-radius: 6px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.8rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .25s;
+    }
+    .btn-nav:hover { background: var(--neon); color: var(--dark); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 40px 80px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(123,47,255,0.15);
+      border: 1px solid rgba(123,47,255,0.4);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: #b49fff;
+      margin-bottom: 30px;
+      animation: fadeUp .8s ease both;
+    }
+    .hero-badge::before { content: '●'; color: var(--neon); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .hero h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      animation: fadeUp .8s .15s ease both;
+    }
+    .hero h1 .line1 { color: #ffffff; display: block; }
+    .hero h1 .line2 {
+      display: block;
+      background: linear-gradient(90deg, var(--neon), var(--neon2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      margin: 24px auto 0;
+      max-width: 580px;
+      font-size: 1.05rem; font-weight: 300; line-height: 1.7;
+      color: #7a90b8;
+      animation: fadeUp .8s .3s ease both;
+    }
+    .hero-cta {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      margin-top: 44px;
+      animation: fadeUp .8s .45s ease both;
+    }
+    .btn-primary {
+      padding: 15px 36px;
+      background: linear-gradient(135deg, var(--neon), #00c2a0);
+      color: var(--dark);
+      border: none; border-radius: 8px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      cursor: pointer; text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 0 30px rgba(0,245,212,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(0,245,212,0.5); }
+    .btn-secondary {
+      padding: 15px 36px;
+      background: transparent;
+      color: #e0e8ff;
+      border: 1.5px solid rgba(224,232,255,0.3);
+      border-radius: 8px;
+      font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      cursor: pointer; text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-secondary:hover { border-color: var(--neon); color: var(--neon); }
+
+    /* floating car icons */
+    .floating-cars {
+      position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    }
+    .fcar {
+      position: absolute;
+      font-size: 1.5rem;
+      opacity: 0.12;
+      animation: drift linear infinite;
+    }
+    @keyframes drift {
+      0%   { transform: translateX(-100px) translateY(0); opacity: 0; }
+      10%  { opacity: 0.12; }
+      90%  { opacity: 0.12; }
+      100% { transform: translateX(120vw) translateY(-40px); opacity: 0; }
+    }
+
+    /* ── STATS STRIP ── */
+    .stats-strip {
+      position: relative; z-index: 1;
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 2px;
+      background: rgba(13,19,37,0.9);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px;
+    }
+    .stat-item {
+      text-align: center; padding: 0 40px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.2rem; font-weight: 900;
+      color: var(--neon);
+    }
+    .stat-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; color: #556; text-transform: uppercase; margin-top: 4px; }
+
+    /* ── FEATURES ── */
+    .section { position: relative; z-index: 1; padding: 100px 60px; }
+    .section-tag {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--neon);
+      margin-bottom: 14px;
+    }
+    .section h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      color: #fff;
+      max-width: 600px;
+      margin-bottom: 60px;
+      line-height: 1.2;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .feat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+      cursor: default;
+    }
+    .feat-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--neon);
+      box-shadow: 0 0 40px rgba(0,245,212,0.1);
+    }
+    .feat-icon { font-size: 2.2rem; margin-bottom: 18px; }
+    .feat-title { font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .feat-desc { font-size: 0.9rem; line-height: 1.6; color: #6a7d9a; }
+    .feat-card .tag {
+      display: inline-block; margin-top: 18px;
+      padding: 4px 12px; border-radius: 50px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 1px;
+      background: rgba(0,245,212,0.1); color: var(--neon);
+      border: 1px solid rgba(0,245,212,0.2);
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section { position: relative; z-index: 1; padding: 80px 60px; background: rgba(13,19,37,0.5); }
+    .steps { display: flex; gap: 0; overflow-x: auto; margin-top: 50px; }
+    .step {
+      flex: 1; min-width: 200px;
+      text-align: center; padding: 30px 20px;
+      position: relative;
+    }
+    .step::after {
+      content: '→';
+      position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+      font-size: 1.5rem; color: var(--neon); opacity: 0.4;
+    }
+    .step:last-child::after { display: none; }
+    .step-num {
+      width: 50px; height: 50px; margin: 0 auto 18px;
+      border-radius: 50%;
+      border: 2px solid var(--neon);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace; font-weight: 700; font-size: 1.1rem;
+      color: var(--neon);
+    }
+    .step-title { font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .step-desc { font-size: 0.82rem; color: #556a84; line-height: 1.5; }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      position: relative; z-index: 1;
+      text-align: center; padding: 100px 40px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(123,47,255,0.15), transparent 70%);
+    }
+    .cta-section h2 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      color: #fff; margin-bottom: 16px;
+    }
+    .cta-section p { color: #6a7d9a; margin-bottom: 40px; font-size: 1rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 30px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem; color: #3a4a60;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* flash messages */
+    .flash { text-align:center; padding: 12px; margin-top: 80px; position:relative; z-index:10; }
+    .flash.error { background: rgba(255,78,78,0.15); border: 1px solid var(--warn); color: var(--warn); }
+    .flash.success { background: rgba(0,245,212,0.1); border: 1px solid var(--neon); color: var(--neon); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="logo">SMART<span>CITY</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="{{ url_for('login') }}" class="btn-nav">Login</a>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="floating-cars" id="floatingCars"></div>
+
+  <div class="hero-badge">AI-Powered Urban Traffic Intelligence</div>
+
+  <h1>
+    <span class="line1">INTELLIGENT</span>
+    <span class="line2">TRAFFIC CONTROL</span>
+  </h1>
+
+  <p class="hero-sub">
+    Real-time YOLO vehicle detection, speed enforcement, and OpenStreetMap-powered intersection simulation — all in one platform.
+  </p>
+
+  <div class="hero-cta">
+    <a href="{{ url_for('signup') }}" class="btn-primary">Get Started Free</a>
+    <a href="{{ url_for('login') }}" class="btn-secondary">Sign In →</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat-item"><div class="stat-num" id="s1">0</div><div class="stat-label">Vehicles Monitored</div></div>
+  <div class="stat-item"><div class="stat-num" id="s2">0</div><div class="stat-label">Speed Violations Caught</div></div>
+  <div class="stat-item"><div class="stat-num" id="s3">0</div><div class="stat-label">Intersections Simulated</div></div>
+  <div class="stat-item"><div class="stat-num" id="s4">0</div><div class="stat-label">Avg. Congestion Reduction</div></div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-tag">Platform Capabilities</div>
+  <h2>Everything You Need to Control City Traffic</h2>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">🎥</div>
+      <div class="feat-title">YOLO Video Analysis</div>
+      <div class="feat-desc">Upload any traffic video. Our YOLOv8-powered engine detects and tracks every vehicle frame-by-frame with precision.</div>
+      <div class="tag">AI Detection</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <div class="feat-title">Real-Time Speed Estimation</div>
+      <div class="feat-desc">Perspective-transform-based speed calculation for each tracked vehicle. Automatic overspeed alerts with visual highlights.</div>
+      <div class="tag">Speed Control</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🗺️</div>
+      <div class="feat-title">OpenStreetMap Simulation</div>
+      <div class="feat-desc">Search any real intersection on the map. Simulate traffic flow, vehicle density, and congestion in real time.</div>
+      <div class="tag">Live Map</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚦</div>
+      <div class="feat-title">Adaptive Signal Control</div>
+      <div class="feat-desc">Manually override or auto-adapt traffic light timings per lane based on vehicle queue length and density.</div>
+      <div class="tag">Smart Signals</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Live Analytics Dashboard</div>
+      <div class="feat-desc">Track IN/OUT vehicle counts, active vehicles, overspeed list, and per-class statistics with a real-time dashboard.</div>
+      <div class="tag">Analytics</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔐</div>
+      <div class="feat-title">Secure User Access</div>
+      <div class="feat-desc">Multi-user platform with secure login, session management, and role-based access for traffic operators.</div>
+      <div class="tag">Security</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-tag">Workflow</div>
+  <h2 style="font-family:'Orbitron',monospace;color:#fff;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:0">How It Works</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">01</div><div class="step-title">Upload Video</div><div class="step-desc">Drop any traffic footage into the dashboard</div></div>
+    <div class="step"><div class="step-num">02</div><div class="step-title">AI Analyzes</div><div class="step-desc">YOLO detects and tracks every vehicle</div></div>
+    <div class="step"><div class="step-num">03</div><div class="step-title">Speed Estimated</div><div class="step-desc">Perspective transform calculates real speed</div></div>
+    <div class="step"><div class="step-num">04</div><div class="step-title">Simulate Intersection</div><div class="step-desc">Search real location, run traffic simulation</div></div>
+    <div class="step"><div class="step-num">05</div><div class="step-title">Control Signals</div><div class="step-desc">Adjust light timings to reduce congestion</div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to Smarten Your City?</h2>
+  <p>Join the platform powering next-generation urban traffic management.</p>
+  <a href="{{ url_for('signup') }}" class="btn-primary">Create Free Account</a>
+</section>
+
+<footer>
+  &copy; 2025 SmartCity Traffic Intelligence — Built with YOLOv8 &amp; OpenStreetMap
+</footer>
+
+<script>
+// Floating cars
+const cars = ['🚗','🚕','🚙','🚌','🚛','🏎️','🚐'];
+const container = document.getElementById('floatingCars');
+for(let i=0;i<14;i++){
+  const c = document.createElement('div');
+  c.className='fcar';
+  c.textContent = cars[Math.floor(Math.random()*cars.length)];
+  c.style.top = (10 + Math.random()*80)+'%';
+  c.style.animationDuration = (12+Math.random()*20)+'s';
+  c.style.animationDelay = (-Math.random()*20)+'s';
+  c.style.fontSize = (1+Math.random()*1.5)+'rem';
+  container.appendChild(c);
+}
+
+// Animated counters
+function animateCount(el, end, suffix='', duration=2000){
+  let start=0; const step = end/80;
+  const timer = setInterval(()=>{
+    start = Math.min(start+step, end);
+    el.textContent = Math.floor(start).toLocaleString() + suffix;
+    if(start>=end) clearInterval(timer);
+  }, duration/80);
+}
+setTimeout(()=>{
+  animateCount(document.getElementById('s1'), 48250);
+  animateCount(document.getElementById('s2'), 3870);
+  animateCount(document.getElementById('s3'), 124);
+  animateCount(document.getElementById('s4'), 38, '%');
+},400);
+</script>
+</body>
+</html>

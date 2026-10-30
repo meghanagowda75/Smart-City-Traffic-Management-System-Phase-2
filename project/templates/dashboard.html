@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — SmartCity Traffic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--neon:#00f5d4;--neon2:#7b2fff;--red:#ff4e4e;--gold:#ffd166;--dark:#06090f;--card:#0d1325;--border:rgba(0,245,212,0.15)}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--dark);color:#e0e8ff;font-family:'Syne',sans-serif;min-height:100vh;overflow-y:auto}
+
+    /* TOPBAR */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 24px;
+      background:rgba(13,19,37,0.97);border-bottom:1px solid var(--border);
+      position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+    .topbar-logo{font-family:'Orbitron',monospace;font-weight:900;color:var(--neon);
+      font-size:1rem;letter-spacing:2px;text-decoration:none}
+    .topbar-logo span{color:var(--neon2)}
+    .topbar-right{display:flex;gap:12px;align-items:center}
+    .nav-link{color:#6a7d9a;text-decoration:none;font-size:0.8rem;font-weight:600;
+      padding:7px 13px;border-radius:6px;transition:all .2s;
+      display:inline-flex;align-items:center;gap:6px}
+    .nav-link:hover,.nav-link.active{background:rgba(0,245,212,0.1);color:var(--neon)}
+    .nav-link svg{width:13px;height:13px;flex-shrink:0}
+    .user-chip{display:flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,0.04);border:1px solid var(--border);
+      border-radius:50px;padding:6px 14px;font-size:0.79rem;color:#a0b8d0}
+    .user-chip .av{width:22px;height:22px;border-radius:50%;
+      background:linear-gradient(135deg,var(--neon),var(--neon2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.68rem;font-weight:700;color:var(--dark)}
+    .logout-btn{padding:7px 14px;background:transparent;
+      border:1px solid rgba(255,78,78,0.35);color:#ff8080;border-radius:6px;
+      font-family:'Syne',sans-serif;font-size:0.78rem;cursor:pointer;
+      transition:all .2s;text-decoration:none;
+      display:inline-flex;align-items:center;gap:5px}
+    .logout-btn:hover{background:rgba(255,78,78,0.1)}
+    .logout-btn svg{width:12px;height:12px}
+
+    /* STATS */
+    .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:14px;padding:20px 24px}
+    .hstat{background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:18px 20px;transition:transform .2s,box-shadow .2s}
+    .hstat:hover{transform:translateY(-2px);box-shadow:0 0 24px rgba(0,245,212,0.07)}
+    .hstat-label{font-size:0.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+      color:#5a7090;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+    .hstat-label svg{width:13px;height:13px}
+    .hstat-val{font-family:'Orbitron',monospace;font-size:1.9rem;font-weight:700}
+    .hstat-sub{font-size:0.7rem;color:#3a4f68;margin-top:3px}
+    .c-neon{color:var(--neon)}.c-warn{color:var(--red)}.c-gold{color:var(--gold)}.c-green{color:#2ecc71}
+
+    /* LAYOUT */
+    .main-grid{display:grid;grid-template-columns:1fr 360px;gap:0;align-items:start}
+    @media(max-width:1050px){.main-grid{grid-template-columns:1fr}}
+
+    /* VIDEO */
+    .video-section{padding:0 24px 40px}
+    .sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .sec-title{font-family:'Orbitron',monospace;font-size:0.78rem;font-weight:700;
+      color:#fff;letter-spacing:1px;display:flex;align-items:center;gap:7px}
+    .sec-title svg{width:14px;height:14px;color:var(--neon)}
+    .video-wrap{position:relative;border-radius:12px;overflow:hidden;
+      border:2px solid var(--border);background:#000}
+    #stream{display:block;width:100%;border-radius:10px}
+    .video-placeholder{width:100%;height:360px;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:14px;
+      background:rgba(13,19,37,0.8);color:#3a4f68}
+    .video-placeholder svg{width:48px;height:48px;opacity:0.4}
+    .video-placeholder p{font-size:0.84rem}
+    .speed-overlay{position:absolute;top:12px;left:12px;
+      background:rgba(6,9,15,0.85);border:1px solid var(--border);
+      border-radius:7px;padding:7px 13px;
+      font-family:'Orbitron',monospace;font-size:0.75rem;color:var(--neon);
+      backdrop-filter:blur(8px);display:none}
+    .overspeed-badge{position:absolute;top:12px;right:12px;
+      background:rgba(255,78,78,0.18);border:1px solid rgba(255,78,78,0.5);
+      border-radius:7px;padding:7px 13px;
+      font-family:'Orbitron',monospace;font-size:0.75rem;color:var(--red);
+      display:none;align-items:center;gap:6px}
+    .overspeed-badge svg{width:13px;height:13px}
+    .upload-bar{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
+    .btn{padding:10px 18px;border:none;border-radius:7px;font-family:'Syne',sans-serif;
+      font-size:0.8rem;font-weight:700;cursor:pointer;transition:all .2s;
+      text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+    .btn svg{width:13px;height:13px;flex-shrink:0}
+    .btn-neon{background:var(--neon);color:var(--dark)}
+    .btn-neon:hover{background:#00d4b5}
+    .btn-outline{background:transparent;border:1px solid var(--border);color:#a0b8d0}
+    .btn-outline:hover{border-color:var(--neon);color:var(--neon)}
+    .btn-sim{background:linear-gradient(135deg,var(--neon2),#5b1fd4);color:#fff}
+    .btn-sim:hover{opacity:0.88}
+    .btn-red{background:transparent;border:1px solid rgba(255,78,78,0.3);color:#ff8080}
+    .btn-red:hover{background:rgba(255,78,78,0.1)}
+
+    /* TABLE */
+    .table-panel{background:var(--card);border:1px solid var(--border);
+      border-radius:12px;padding:18px;margin-top:18px}
+    table{width:100%;border-collapse:collapse}
+    th{padding:9px 13px;font-size:0.65rem;font-weight:700;letter-spacing:2px;
+      text-transform:uppercase;color:#5a7090;border-bottom:1px solid var(--border);text-align:left}
+    td{padding:9px 13px;font-size:0.81rem;border-bottom:1px solid rgba(255,255,255,0.04)}
+    tr:last-child td{border-bottom:none}
+    .overspeed-row td{color:#ff7777;background:rgba(255,78,78,0.04)}
+    .badge{display:inline-block;padding:2px 9px;border-radius:50px;font-size:0.66rem;font-weight:700}
+    .badge-warn{background:rgba(255,78,78,0.12);color:var(--red);border:1px solid rgba(255,78,78,0.25)}
+    .badge-ok{background:rgba(46,204,113,0.08);color:#2ecc71;border:1px solid rgba(46,204,113,0.18)}
+    .empty-row{text-align:center;color:#3a4f68;padding:22px!important;font-size:0.8rem}
+
+    /* RIGHT PANEL */
+    .right-panel{border-left:1px solid var(--border);padding:20px 18px;
+      display:flex;flex-direction:column;gap:16px;padding-bottom:40px}
+    .rpanel{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:16px}
+    .rpanel-title{font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;
+      letter-spacing:2px;color:var(--neon);margin-bottom:12px;
+      display:flex;align-items:center;gap:7px}
+    .rpanel-title svg{width:13px;height:13px}
+    .speed-limit-row{display:flex;align-items:center;gap:9px}
+    .speed-input{width:72px;padding:8px 10px;background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#e0e8ff;
+      font-family:'Orbitron',monospace;font-size:0.95rem;text-align:center;outline:none}
+    .speed-input:focus{border-color:var(--neon)}
+    .alert-list{display:flex;flex-direction:column;gap:7px;max-height:190px;overflow-y:auto}
+    .alert-item{background:rgba(255,78,78,0.07);border:1px solid rgba(255,78,78,0.18);
+      border-radius:7px;padding:9px 11px;font-size:0.76rem}
+    .alert-item strong{color:var(--red)}
+    .alert-time{color:#3a4f68;font-size:0.68rem;margin-top:2px}
+    .no-alerts{color:#3a4f68;font-size:0.78rem;text-align:center;padding:18px}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="{{ url_for('launch') }}" class="topbar-logo">SMART<span>CITY</span></a>
+  <div class="topbar-right">
+    <a href="{{ url_for('dashboard') }}" class="nav-link active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a href="{{ url_for('simulation') }}" class="nav-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Simulation
+    </a>
+    <div class="user-chip">
+      <div class="av">{{ session.get('username','U')[0].upper() }}</div>
+      {{ session.get('username','User') }}
+    </div>
+    <a href="{{ url_for('logout') }}" class="logout-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </a>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="hero-stats">
+  <div class="hstat">
+    <div class="hstat-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      Vehicles IN
+    </div>
+    <div class="hstat-val c-neon" id="in_count">0</div>
+    <div class="hstat-sub">Total counted in</div>
+  </div>
+  <div class="hstat">
+    <div class="hstat-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Vehicles OUT
+    </div>
+    <div class="hstat-val c-neon" id="out_count">0</div>
+    <div class="hstat-sub">Total counted out</div>
+  </div>
+  <div class="hstat">
+    <div class="hstat-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Active Now
+    </div>
+    <div class="hstat-val c-gold" id="active_count">0</div>
+    <div class="hstat-sub">Live tracked</div>
+  </div>
+  <div class="hstat">
+    <div class="hstat-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Overspeed
+    </div>
+    <div class="hstat-val c-warn" id="overspeed_count">0</div>
+    <div class="hstat-sub">Violations detected</div>
+  </div>
+</div>
+
+<div class="main-grid">
+  <!-- VIDEO + TABLE -->
+  <div class="video-section">
+    <div class="sec-header">
+      <div class="sec-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        LIVE VIDEO FEED
+      </div>
+      <span style="font-size:0.7rem;color:#3a4f68" id="feed-status">Waiting for video</span>
+    </div>
+
+    <div class="video-wrap" id="videoWrap">
+      <div class="video-placeholder" id="videoPlaceholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <p>Upload a traffic video to start YOLO analysis</p>
+        <button class="btn btn-neon" onclick="document.getElementById('videoUpload').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Video
+        </button>
+      </div>
+      <img id="stream" src="" style="display:none;width:100%" alt="Video Feed"/>
+      <div class="speed-overlay" id="speedOverlay">
+        SPEED LIMIT: <span id="limitDisplay">80</span> km/h
+      </div>
+      <div class="overspeed-badge" id="overspeedBadge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        OVERSPEED DETECTED
+      </div>
+    </div>
+
+    <div class="upload-bar">
+      <input type="file" id="videoUpload" accept="video/*" style="display:none"/>
+      <button class="btn btn-neon" onclick="document.getElementById('videoUpload').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload Video
+      </button>
+      <a href="{{ url_for('simulation') }}" class="btn btn-sim">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Traffic Simulation
+      </a>
+    </div>
+
+    <div class="table-panel">
+      <div class="sec-header" style="margin-bottom:12px">
+        <div class="sec-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          LIVE VEHICLE DATA
+        </div>
+        <span style="font-size:0.7rem;color:#3a4f68" id="table-count">0 vehicles</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Class</th><th>Speed (km/h)</th><th>Status</th></tr>
+        </thead>
+        <tbody id="vehicles_table">
+          <tr><td class="empty-row" colspan="4">No vehicles detected yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <!-- Speed Limit -->
+    <div class="rpanel">
+      <div class="rpanel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        SPEED LIMIT CONTROL
+      </div>
+      <div class="speed-limit-row">
+        <input type="number" class="speed-input" id="speedLimitInput" value="80" min="10" max="200"/>
+        <span style="color:#5a7090;font-size:0.78rem">km/h</span>
+        <button class="btn btn-neon" style="padding:8px 14px;font-size:0.76rem" onclick="setSpeedLimit()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Set
+        </button>
+      </div>
+      <div style="margin-top:10px;font-size:0.72rem;color:#3a4f68;line-height:1.5">
+        Vehicles exceeding this limit will be flagged with red highlight.
+      </div>
+    </div>
+
+    <!-- Overspeed Alerts -->
+    <div class="rpanel">
+      <div class="rpanel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        OVERSPEED ALERTS
+      </div>
+      <div class="alert-list" id="alertList">
+        <div class="no-alerts">No violations detected</div>
+      </div>
+    </div>
+
+    <!-- Class Breakdown -->
+    <div class="rpanel">
+      <div class="rpanel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        VEHICLE CLASS BREAKDOWN
+      </div>
+      <div id="classBreakdown">
+        <div style="color:#3a4f68;font-size:0.76rem;text-align:center;padding:14px">Waiting for data...</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="rpanel">
+      <div class="rpanel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        QUICK ACTIONS
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a href="{{ url_for('simulation') }}" class="btn btn-sim" style="justify-content:center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Traffic Simulation
+        </a>
+        <button class="btn btn-outline" style="justify-content:center" onclick="location.reload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Refresh Dashboard
+        </button>
+        <button class="btn btn-red" style="justify-content:center" onclick="clearAlerts()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Clear Alerts
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let speedLimit=80, alertLog=[];
+
+document.getElementById('videoUpload').addEventListener('change',async function(){
+  if(!this.files[0]) return;
+  const formData=new FormData();
+  formData.append('video',this.files[0]);
+  const statusEl=document.getElementById('feed-status');
+  statusEl.textContent='Uploading...';
+  statusEl.style.color='#f1c40f';
+  try{
+    const resp=await fetch('/upload_video',{method:'POST',body:formData});
+    const data=await resp.json();
+    if(data.warning){
+      // Video saved but YOLO failed (e.g. missing model)
+      statusEl.textContent='Warning: '+data.warning;
+      statusEl.style.color='var(--red)';
+      showBanner('warning', data.warning);
+      return;
+    }
+    if(data.ok){
+      const img=document.getElementById('stream');
+      img.src='/video_feed?x='+Date.now();
+      img.style.display='block';
+      document.getElementById('videoPlaceholder').style.display='none';
+      document.getElementById('speedOverlay').style.display='block';
+      statusEl.textContent='Live — YOLO Active';
+      statusEl.style.color='var(--green)';
+    }
+  }catch(e){
+    statusEl.textContent='Upload failed';
+    statusEl.style.color='var(--red)';
+  }
+});
+
+function showBanner(type, msg){
+  const existing=document.getElementById('yoloBanner');
+  if(existing) existing.remove();
+  const div=document.createElement('div');
+  div.id='yoloBanner';
+  div.style.cssText=`
+    background:rgba(255,78,78,0.1);border:1px solid rgba(255,78,78,0.35);
+    border-radius:9px;padding:14px 18px;margin:12px 0;
+    font-size:0.82rem;color:#ff8080;line-height:1.6;
+  `;
+  div.innerHTML=`
+    <strong style="color:var(--red);font-family:Orbitron,monospace;font-size:0.75rem;letter-spacing:1px">
+      YOLO MODEL MISSING
+    </strong><br/>
+    ${msg}<br/>
+    <span style="color:#5a7090">Place <code style="color:var(--neon)">yolov8n.pt</code> 
+    inside the <code style="color:var(--neon)">./models/</code> folder and restart the server.</span>
+  `;
+  const wrap=document.querySelector('.video-wrap');
+  wrap.parentNode.insertBefore(div, wrap.nextSibling);
+}
+
+function setSpeedLimit(){
+  speedLimit=parseInt(document.getElementById('speedLimitInput').value)||80;
+  document.getElementById('limitDisplay').textContent=speedLimit;
+  fetch('/set_speed_limit',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({limit:speedLimit})});
+}
+
+function clearAlerts(){alertLog=[];renderAlerts();}
+
+function renderAlerts(){
+  const el=document.getElementById('alertList');
+  if(!alertLog.length){el.innerHTML='<div class="no-alerts">No violations detected</div>';return;}
+  el.innerHTML=alertLog.slice(-8).reverse().map(a=>`
+    <div class="alert-item">
+      <strong>ID ${a.id} — ${a.class_name}</strong>: ${a.speed} km/h
+      <div class="alert-time">${a.time}</div>
+    </div>`).join('');
+}
+
+async function updateData(){
+  try{
+    const res=await fetch('/data');
+    const data=await res.json();
+    document.getElementById('in_count').textContent=data.in_count;
+    document.getElementById('out_count').textContent=data.out_count;
+    document.getElementById('active_count').textContent=data.current_vehicles.length;
+    document.getElementById('overspeed_count').textContent=data.overspeed.length;
+    document.getElementById('table-count').textContent=data.current_vehicles.length+' vehicles';
+
+    const badge=document.getElementById('overspeedBadge');
+    badge.style.display=data.overspeed.length?'flex':'none';
+
+    const tbody=document.getElementById('vehicles_table');
+    if(!data.current_vehicles.length){
+      tbody.innerHTML='<tr><td class="empty-row" colspan="4">No vehicles detected</td></tr>';
+    } else {
+      tbody.innerHTML=data.current_vehicles.map(v=>`
+        <tr class="${v.overspeed?'overspeed-row':''}">
+          <td>#${v.id}</td><td>${v.class_name}</td>
+          <td><strong>${v.speed}</strong></td>
+          <td><span class="badge ${v.overspeed?'badge-warn':'badge-ok'}">${v.overspeed?'OVERSPEED':'OK'}</span></td>
+        </tr>`).join('');
+    }
+
+    data.overspeed.forEach(v=>{
+      if(!alertLog.find(a=>a.id===v.id&&a.speed===v.speed))
+        alertLog.push({...v,time:new Date().toLocaleTimeString()});
+    });
+    renderAlerts();
+
+    const classCount={};
+    data.current_vehicles.forEach(v=>{classCount[v.class_name]=(classCount[v.class_name]||0)+1;});
+    const total=data.current_vehicles.length||1;
+    const cbEl=document.getElementById('classBreakdown');
+    if(Object.keys(classCount).length){
+      cbEl.innerHTML=Object.entries(classCount).map(([cls,cnt])=>`
+        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:0.73rem">
+            <span style="color:#a0b8d0">${cls}</span>
+            <span style="font-family:Orbitron,monospace;color:var(--neon)">${cnt}</span>
+          </div>
+          <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px">
+            <div style="height:100%;width:${(cnt/total*100).toFixed(0)}%;background:var(--neon);border-radius:2px;transition:width .5s"></div>
+          </div>
+        </div>`).join('');
+    } else {
+      cbEl.innerHTML='<div style="color:#3a4f68;font-size:0.76rem;text-align:center;padding:14px">Waiting for data...</div>';
+    }
+  }catch(e){}
+}
+setInterval(updateData,1000);
+updateData();
+</script>
+</body>
+</html>
