@@ -392,7 +392,7 @@ Open the local URL displayed in your terminal.
 
 </div>
 
-
+https://github.com/meghanagowda75/Smart-City-Traffic-Management-System-Phase-2/blob/main/smart_city_management_system.mp4
 
 
 
